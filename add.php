@@ -1,4 +1,6 @@
 <?php
+	include('config/db_connect.php');
+	
 	$title=$email=$ingredients='';
 	$errors = array('email'=>'','title'=>'','ingredients'=>'');
 	if(isset($_POST['submit'])){
@@ -8,7 +10,7 @@
 		}else{
 			$email = $_POST['email'];
 			if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-				$errors['email']= "Email must be a valib email address";
+				$errors['email']= "Email must be a valid email address";
 			}
 		}
 		//check title
@@ -33,7 +35,27 @@
 			
 		}else{
 			//form is valid
+			$email = mysqli_real_escape_string($conn, $_POST['email']);
+			$title = mysqli_real_escape_string($conn, $_POST['title']);
+			$ingredients = mysqli_real_escape_string($conn, $_POST['ingredients']);
+
+			$sql = "INSERT INTO pizzas(title, email, ingredients) 
+					VALUES('$title','$email','$ingredients')";
+			//save to db and check
+			$result = mysqli_query($conn, $sql);
+			if($result){
+				//success
+			}else{
+				//error
+				echo 'query error: '. mysqli_error($conn);
+			}
 			header('Location: project1.php');
+			
+			//free result
+			mysqli_free_result($result);
+
+			//close conn
+			mysqli_close($conn);
 		}
 	} //end of POST check
 ?>
@@ -42,7 +64,7 @@
 	<?php include('templates/header.php'); ?>
 	<section class="container grey-text">
 		<h4 class="center">Add a Pizza</h4>
-		<form action="add.php" class="white" method="POST">
+		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" class="white" method="POST">
 			<label for="">Your Email:</label>
 			<input type="text" name="email" value="<?php echo htmlspecialchars($email); ?>">
 			<div class="red-text"><?php echo $errors['email']; ?></div>
